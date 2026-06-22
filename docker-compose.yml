@@ -6,7 +6,11 @@ services:
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
+      - sqlite:/var/lib/sqlite      # ← DB lives here, off the Windows mount
     ports:
-      - "8000:8000"   # Laravel app
-      - "5173:5173"   # Vite dev server
+      - "8000:8000"
+      - "5173:5173"
     command: sleep infinity
+
+volumes:
+  sqlite:

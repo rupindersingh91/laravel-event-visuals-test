@@ -6,20 +6,32 @@ import { Button } from '@/components/ui/button';
 
 interface EventRow {
     id: string;
+    name: string;
+    description: string;
     type: string;
     status: string;
     created_time: number | null;
+    starts_at_iso: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    location_name: string;
+    image_urls: string[];
+    min_price: number | null;
+    venue: string;
     user: { id: number; name: string } | null;
 }
 
 const props = defineProps<{
-    filters: { status: string | null; from: string };
+    filters: { status: string | null; from: string; to: string | null; city: string | null };
     statuses: string[];
+    cities: string[];
 }>();
 
 const form = reactive({
     status: props.filters.status ?? '',
     from: props.filters.from ?? '',
+    to: props.filters.to ?? '',
+    city: props.filters.city ?? '',
 });
 
 const rows = ref<EventRow[]>([]);
@@ -52,6 +64,8 @@ async function loadMore() {
     const params = new URLSearchParams({ page: String(page.value + 1) });
     if (form.status) params.set('status', form.status);
     if (form.from) params.set('from', form.from);
+    if (form.to) params.set('to', form.to);
+    if (form.city) params.set('city', form.city);
 
     try {
         const response = await fetch(`/events/data?${params.toString()}`, {
@@ -145,7 +159,27 @@ onBeforeUnmount(() => observer?.disconnect());
                     class="h-9 rounded-md border border-input bg-background px-3 text-sm"
                 />
             </div>
-            <Button type="button" @click.prevent="aplyFilters">Filter</Button>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-muted-foreground" for="to">To</label>
+                <input
+                    id="to"
+                    v-model="form.to"
+                    type="date"
+                    class="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                />
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-muted-foreground" for="city">City</label>
+                <select
+                    id="city"
+                    v-model="form.city"
+                    class="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                >
+                    <option value="">All cities</option>
+                    <option v-for="c in cities" :key="c" :value="c">{{ c }}</option>
+                </select>
+            </div>
+            <Button type="button" @click.prevent="applyFilters">Filter</Button>
         </form>
 
         <div class="overflow-x-auto rounded-lg border">
